@@ -1,84 +1,57 @@
 +++
-title = "Code blocks"
+title = "Genome architecture"
 hascode = true
-date = Date(2019, 3, 22)
-rss = "A short description of the page which would serve as **blurb** in a `RSS` feed; you can use basic markdown here but the whole description string must be a single line (not a multiline string). Like this one for instance. Keep in mind that styling is minimal in RSS so for instance don't expect maths or fancy styling to work; images should be ok though: ![](https://upload.wikimedia.org/wikipedia/en/3/32/Rick_and_Morty_opening_credits.jpeg)"
+date = Date(2022, 3, 11)
+rss = "Genome architecture and how to find it"
 +++
 @def tags = ["syntax", "code"]
 
-# Working with code blocks
+# Genome architecture
 
 \toc
 
-## Live evaluation of code blocks
+## Introduction
 
-If you would like to show code as well as what the code outputs, you only need to specify where the script corresponding to the code block will be saved.
+One of the most fundamental pieces of information retrieved from any prokaryotic genome is the total number of encoded genes. The related concepts coding density (ratio coding genome / total genome) and gene density (genes per base) are commonly used in addition to the total number of genes, but the underlying genome architecture that belies a dense or sparsely coded genome is not often discussed past the point of establishing that a genome is or isn’t dense. I wanted to explore the tunable variables that enable dense or sparse genomes. Is there a one size fits all strategy for dense or sparse genomes, are there multiple possible strategies, or is there no shared strategy at all?
 
-Indeed, what happens is that the code block gets saved as a script which then gets executed.
-This also allows for that block to not be re-executed every time you change something _else_ on the page.
+## Gathering data
 
-Here's a simple example (change values in `a` to see the results being live updated):
+Incomplete and poorly annotated genomes will greatly influence these metrics. For this reason I used the [refseq](https://www.ncbi.nlm.nih.gov/books/NBK50679/#RefSeqFAQ.what_is_a_reference_sequence_r) database. There is a minimum of quality required for inclusion in the refseq database, and the genome annotations are regularly updated to reflect the newest insights.  
 
-```julia:./exdot.jl
-using LinearAlgebra
-a = [1, 2, 3, 3, 4, 5, 2, 2]
-@show dot(a, a)
-println(dot(a, a))
+I used the following query to retrieve gff files from the NCBI refseq database. 
+
+```
+("Bacteria"[Organism] OR "Archaea"[Organism]) AND latest[filter] AND ("complete genome"[filter] OR "scaffold level"[filter] OR "chromosome level"[filter] OR "contig level"[filter]) AND "full genome representation"[filter] AND (all[filter] NOT "from large multi isolate project"[filter] AND all[filter] NOT anomalous[filter] AND all[filter] NOT partial[filter]) AND "genbank has annotation"[Properties] AND "taxonomy check ok"[filter] AND ("1"[ContigCount] : "50"[ContigCount])
 ```
 
-You can now show what this would look like:
+The most relevant criterion is the max contig count of 50, as fragmented genomes will affect these metrics. 
 
-\output{./exdot.jl}
+Retrieved 64268 genomes, which were filtered for presence in the SILVA database (61320) identified superkingdom (61317), and then de-replicated to have one representative for each family (7571).
 
-**Notes**:
-* you don't have to specify the `.jl` (see below),
-* you do need to explicitly use print statements or `@show` for things to show, so just leaving a variable at the end like you would in the REPL will show nothing,
-* only Julia code blocks are supported at the moment, there may be a support for scripting languages like `R` or `python` in the future,
-* the way you specify the path is important; see [the docs](https://tlienart.github.io/franklindocs/code/index.html#more_on_paths) for more info. If you don't care about how things are structured in your `/assets/` folder, just use `./scriptname.jl`. If you want things to be grouped, use `./group/scriptname.jl`. For more involved uses, see the docs.
+## Calculating genome properties
 
-Lastly, it's important to realise that if you don't change the content of the code, then that code will only be executed _once_ even if you make multiple changes to the text around it.
+Calculating the various properties that consiture genom architecture is relatively straightforward. 
 
-Here's another example,
+| Genome properties | calc      |
+|-------------------|-----------|
+| genome size       | $\sum_{i=1}^{\textrm{total\;contigs}} \left(\textrm{contig} \cdot \textrm{length\;contig}\right)$ |
+| total gaps        | $\textrm{if\;noncircular, total\;genes}\;-1, \textrm{else,\;total\;genes}$ |
+| total gene length | $\sum_{i=1}^{n} (\textrm{end\;of\;gene}_{n} - \textrm{start\;of\;gene}_{n})$ |
+| mean gene length  | $\textrm{total\;length\;of\;genes} \cdot \textrm{total\;genes}^{-1}$ |
+| gene density      | $\textrm{total\;number\;of\;genes} \cdot \textrm{kilobase}^{-1}$ |
+| efficiency        | $\textrm{mean\;gene\;length} \cdot \textrm{total\;number\;of\;genes} \cdot \textrm{genome\;size}^{-1}$ |
+| con- & di-vergent overlap proportion   | $(\textrm{divergent+convergent\;overlaps}) \cdot \textrm{total\;genes}^{-1}$ |
+| total unidirectional overlaps          | $\textrm{intergenic\;gaps}\;<\;0$ |
+| unidirectional overlap proportion      | $\textrm{unidirectional\;overlaps} \cdot \textrm{total\;genes}^{-1}$ |
+| sum intergenic gap size                | $\sum_{i=1}^{n-1} (\textrm{start\;of\;gene}_{n+1} - \textrm{end\;of\;gene}_{n}) $ |
+| mean intergenic gap size               | $\textrm{sum\;intergenic\;gap\;size} \cdot \textrm{total\;gaps}$ |
+| unidirectional overlap size            | $\textrm{for\;intergenic\;gaps}\;<\;0, \frac{|\textrm{mean\;gap\;size}|}{\textrm{total\;gaps}}$ |
+| strandedness      | $\log_{10}\left(\frac{\textrm{total\;genes\;+\;strand}}{\textrm{total\;genes\;-\;strand}}\right)$ |
 
-```julia:./code/ex2
-for i ∈ 1:5, j ∈ 1:5
-    print(" ", rpad("*"^i,5), lpad("*"^(6-i),5), j==5 ? "\n" : " "^4)
-end
-```
+## Visualising large datasets
 
-which gives the (utterly useless):
+Plotting data originating from 7571 genomes is difficult, as the density of of points is high. Just adjusting alpha's does not allow for the detailed look into the variables that we require. That is why I decided to use kernel density estimates as a way to visualize the dense data cloud. 
 
-\output{./code/ex2}
-
-note the absence of `.jl`, it's inferred.
-
-You can also hide lines (that will be executed nonetheless):
-
-```julia:./code/ex3
-using Random
-Random.seed!(1) # hide
-@show randn(2)
-```
-
-\output{./code/ex3}
+upcoming.
 
 
-## Including scripts
-
-Another approach is to include the content of a script that has already been executed.
-This can be an alternative to the description above if you'd like to only run the code once because it's particularly slow or because it's not Julia code.
-For this you can use the `\input` command specifying which language it should be tagged as:
-
-
-\input{julia}{/_assets/scripts/script1.jl} <!--_-->
-
-
-these scripts can be run in such a way that their output is also saved to file, see `scripts/generate_results.jl` for instance, and you can then also input the results:
-
-\output{/_assets/scripts/script1.jl} <!--_-->
-
-which is convenient if you're presenting code.
-
-**Note**: paths specification matters, see [the docs](https://tlienart.github.io/franklindocs/code/index.html#more_on_paths) for details.
-
-Using this approach with the `generate_results.jl` file also makes sure that all the code on your website works and that all results match the code which makes maintenance easier.
