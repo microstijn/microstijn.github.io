@@ -1,127 +1,135 @@
-@def title = "More goodies"
+@def title = "The road to deconvolution"
 @def hascode = true
-@def rss = "A short description of the page which would serve as **blurb** in a `RSS` feed; you can use basic markdown here but the whole description string must be a single line (not a multiline string). Like this one for instance. Keep in mind that styling is minimal in RSS so for instance don't expect maths or fancy styling to work; images should be ok though: ![](https://upload.wikimedia.org/wikipedia/en/b/b0/Rick_and_Morty_characters.jpg)"
-@def rss_title = "More goodies"
-@def rss_pubdate = Date(2019, 5, 1)
+@def rss = "Learning how to perform convolution and deconvolution"
+@def rss_title = "The road to deconvolution"
+@def rss_pubdate = Date(2022, 3, 23)
 
 @def tags = ["syntax", "code", "image"]
 
-# More goodies
+# The road to deconvolution
 
 \toc
 
-## More markdown support
+## Convolution
+The goal is to understand and write a deconvolution program. Deconvolution is used for many applications, but main one I am interested in is high resolution microscopy. Before we can understand de-convolution, it would be prudent to first understand convolution.
 
-The Julia Markdown parser in Julia's stdlib is not exactly complete and Franklin strives to bring useful extensions that are either defined in standard specs such as Common Mark or that just seem like useful extensions.
-
-* indirect references for instance [like so]
-
-[like so]: http://existentialcomics.com/
-
-or also for images
-
-![][some image]
-
-some people find that useful as it allows referring multiple times to the same link for instance.
-
-[some image]: https://upload.wikimedia.org/wikipedia/commons/9/90/Krul.svg
-
-* un-qualified code blocks are allowed and are julia by default, indented code blocks are not supported by default (and there support will disappear completely in later version)
-
-```
-a = 1
-b = a+1
-```
-
-you can specify the default language with `@def lang = "julia"`.
-If you actually want a "plain" code block, qualify it as `plaintext` like
-
-```plaintext
-so this is plain-text stuff.
-```
-
-## A bit more highlighting
-
-Extension of highlighting for `pkg` an `shell` mode in Julia:
-
-```julia-repl
-(v1.4) pkg> add Franklin
-shell> blah
-julia> 1+1
-(Sandbox) pkg> resolve
-```
-
-you can tune the colouring in the CSS etc via the following classes:
-
-* `.hljs-meta` (for `julia>`)
-* `.hljs-metas` (for `shell>`)
-* `.hljs-metap` (for `...pkg>`)
-
-## More customisation
-
-Franklin, by design, gives you a lot of flexibility to define how you want stuff be done, this includes doing your own parsing/processing and your own HTML generation using Julia code.
-
-In order to do this, you can define two types of functions in a `utils.jl` file which will complement your `config.md` file:
-
-* `hfun_*` allow you to plug custom-generated HTML somewhere
-* `lx_*` allow you to do custom parsing of markdown and generation of HTML
-
-The former (`hfun_*`) is most likely to be useful.
-
-### Custom "hfun"
-
-If you define a function `hfun_bar` in the `utils.jl` then you have access to a new template function `{{bar ...}}`. The parameters are passed as a list of strings, for instance variable names but it  could just be strings as well.
-
-For instance:
+In our case, convolution is the averaging of each pixel based on the surrounding pixels and a "kernel": a transformative matrix that allocated weights to each pixel.
 
 ```julia
-function hfun_bar(vname)
-  val = Meta.parse(vname[1])
-  return round(sqrt(val), digits=2)
-end
+
+kernel = [
+    a b c;
+    d e f;
+    g h i
+]
+
 ```
 
-~~~
-.hf {background-color:black;color:white;font-weight:bold;}
-~~~
-
-Can be called with `{{bar 4}}`: **{{bar 4}}**.
-
-Usually you will want to pass variable name (either local or global) and collect their value via one of `locvar`, `globvar` or `pagevar` depending on your use case.
-Let's have another toy example:
+This kernel matrix tends to be small, and at least smaller than the original image. A 3x3 kernel means the image can only start being transformed at $[3,3]$, as $[1:2, 1:2]$ (and all other edge pixels) do not have the required neigours to apply the transformation. There are ways around it, by padding the original matrix with fake data, but I won't bother.
 
 ```julia
-function hfun_m1fill(vname)
-  var = vname[1]
-  return pagevar("menu1", var)
-end
+
+image = [
+    [1,1] [1,2] [1,3] [1,4] [1,5] [1,6];
+    [2,1] [2,2] [2,3] [2,4] [2,5] [2,6];
+    [3,1] [3,2] [3,3] [3,4] [3,5] [3,6];
+    [4,1] [4,2] [4,3] [4,4] [4,5] [4,6];
+    [5,1] [5,2] [5,3] [5,4] [5,5] [5,6];
+    [6,1] [6,2] [6,3] [6,4] [6,5] [6,6];
+    [7,1] [7,2] [7,3] [7,4] [7,5] [7,6];
+    [8,1] [8,2] [8,3] [8,4] [8,5] [8,6];
+]
+
 ```
 
-Which you can use like this `{{m1fill title}}`: **{{m1fill title}}**. Of course  in this specific case you could also have used `{{fill title menu1}}`: **{{fill title menu1}}**.
+When the kernel is placed at $[3,3]$, the value of $[3,3]$ becomes
 
-Of course these examples are not very useful, in practice you might want to use it to generate actual HTML in a specific way using Julia code.
-For instance you can use it to customise how [tag pages look like](/menu3/#customising_tag_pages).
+$$a[1,1] + b[1,2] + c[1,3] + d[2,1] + e[2,2] + f[2,3] + g[3,1] + h[3,2] + i[3,3]$$
 
-A nice example of what you can do is in the [SymbolicUtils.jl manual](https://juliasymbolics.github.io/SymbolicUtils.jl/api/) where they use a `hfun_` to generate HTML encapsulating the content of code docstrings, in a way doing something similar to what Documenter does. See [how they defined it](https://github.com/JuliaSymbolics/SymbolicUtils.jl/blob/website/utils.jl).
-
-**Note**: the  output **will not** be reprocessed by Franklin, if you want to generate markdown which should be processed by Franklin, then use `return fd2html(markdown, internal=true)` at the end.
-
-### Custom "lx"
-
-These commands will look the same as latex commands but what they do with their content is now entirely controlled by your code.
-You can use this to do your own parsing of specific chunks of your content if you so desire.
-
-The definition of `lx_*` commands **must** look like this:
+the kernel then trecks across all values, and each is transformed as above. That leads us to the convolve function:
 
 ```julia
-function lx_baz(com, _)
-  # keep this first line
-  brace_content = Franklin.content(com.braces[1]) # input string
-  # do whatever you want here
-  return uppercase(brace_content)
-end
+# where A = image 2D array and K = kernel.
+convolve(A, K) = 
+        begin
+            # initilize array
+            C = []
+
+            # extract dimentions from A and K
+            size_A = size(A)
+            size_filter = size(K)
+            A_rows = size_A[1]
+            A_cols = size_A[2]
+            window_row = size_filter[1]
+            window_col = size_filter[2]
+
+            # kernel window is uneven. Kenel of dims = 5 would start [3,3] and have [3-2, 3-2] as upper left value. 
+            row_mid = convert(Int8,sum(1:window_row) / window_row)
+            col_mid = convert(Int8,sum(1:window_col) / window_col)
+            row_one_off = row_mid - 1
+            col_one_off = col_mid - 1
+
+            # main functional part, zooms across each pixel of each columna and row
+            # extracts the region of interest "the window" and applies the matrix multiplication.
+            for col in col_mid:(A_cols - row_one_off)
+                for row in row_mid:(A_rows - row_one_off)
+                    window_row_begin = row - row_one_off
+                    window_col_begin = col - col_one_off
+                    window_row_end = (window_row_begin + window_row - 1)
+                    window_col_end = (window_col_begin + window_col - 1)
+                    push!(C, sum(sum(A[window_row_begin:window_row_end, window_col_begin:window_col_end] .* K)))
+                end
+            end
+
+            # give array 2 dimentions and push to C
+            new_dims = (A_rows - (2*row_one_off), A_cols - (2*col_one_off))
+            C = reshape(C, new_dims)
+        end
 ```
 
-You can call the above with `\baz{some string}`: \baz{some string}.
+Now that we have a general function defined, we can see it in action:
 
-**Note**: the output **will be** reprocessed by Franklin, if you want to avoid this, then escape the output by using `return "~~~" * s * "~~~"` and it will be plugged  in as is in the HTML.
+```julia
+using Images
+using TestImages
+using CairoMakie
+
+A = testimage("fabio_gray_256");
+A = real.(A);
+
+K = [
+    -0 -1 -1 -1 -1;
+    -1 -1 -1 -1 -1;
+    -1 -1 25 -1 -1;
+    -1 -1 -1 -1 -1;
+    -1 -1 -1 -1 -1;
+    ]
+
+B = convolve(A, K)
+
+# figure part
+B = B[end:-1:1,end:-1:1]
+A = A[end:-1:1,end:-1:1]
+
+fig = Figure()
+
+a_ax = CairoMakie.Axis(fig[1,1], title = "Orginal", aspect = 1)
+b_ax = CairoMakie.Axis(fig[1,2], title = "Filter applied",aspect = 1)
+
+hidedecorations!(a_ax)
+hidedecorations!(b_ax)
+
+heatmap!(a_ax, A', colormap = :grays)
+heatmap!(b_ax, B', colormap = :grays)
+
+fig
+```
+
+\fig{fig.png}
+
+This is just a simple 2D variant, but should be easy to scale to 3D.
+
+## Deconvolution
+
+Deconvolution is convolution, but the other way. We have the transformed headshot and the kernel, and we want to go back to the original data. This is what is used in 
+
