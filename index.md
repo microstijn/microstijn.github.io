@@ -25,7 +25,7 @@ For a blog on the project click [here](/menu1/)
 
 ### Convolution / deconvolution
 
-I have used deconvolution software to denoise image datasets, and to increase the spatial resolution of fluorophores. I wanted to fully understand the inner workings of these usefull techniques, and am implementing a simple 2D proof of principle. 
+I have used deconvolution software to denoise image datasets, and to increase the spatial resolution of fluorophores. I want to fully understand the inner workings of these usefull techniques, and am implementing a simple version [here](/menu2/).
 
 ## Skills
 
@@ -43,8 +43,18 @@ I have used deconvolution software to denoise image datasets, and to increase th
 
 ## Publication list
 
+Reviews 
 
+\biblabel{Peeters18A}{Peeters & de Jonge (2018)}**Peeters**, **de Jonge**, "For the greater good: programmed cell death in bacterial communities”, Microbiological research 207, 161–169 (2018).
 
+\biblabel{Peeters18B}{Peeters & de Jonge (2018)}**Peeters**, **van Niftrik**, “Trending topics and open questions in anaerobic ammonium oxidation”, Curr Opin Chem Biol 49, 45–52 (2018).
 
-\biblabel{noether15}{Noether (1915)} **Noether**,  Körper und Systeme rationaler Funktionen, 1915.
-\biblabel{bezanson17}{Bezanson et al. (2017)} **Bezanson**, **Edelman**, **Karpinski** and **Shah**, [Julia: a fresh approach to numerical computing](https://julialang.org/research/julia-fresh-approach-BEKS.pdf), SIAM review 2017.
+\biblabel{Schmitz21A}{Schmitz et al.,(2021)} **Schmitz**, **Peeters**, **Versantvoort**, **Picone**, **Pol**, **Jetten**, **Op den Camp**, “Verrucomicrobial methanotrophs: ecophysiology of metabolically versatile acidophiles”, FEMS Microbiology Reviews (2021).
+
+Anammox: differential expression during nutrient limitation
+
+Planctomycetes: cell division
+
+Planctomycetes: cell biology
+
+Planctomycetes: species descriptions
