@@ -7,13 +7,15 @@
 
 ## Introduction
 
-I'm Stijn, biologist and programmer. I have been active as cell biologist investigating the cell biology of Planctomycetes during a PhD at the (environmental) microbiology department \@ [radboud](https://www.ru.nl/microbiology/). 
+I am a (micro) biologist, programmer and music enthusiast. I have been active as cell biologist investigating the cell biology of Planctomycetes during a PhD at the (environmental) microbiology department \@ [radboud](https://www.ru.nl/microbiology/). 
 
-I love creating, managing, exploring and visualising large biological datasets, and I am a big believer in europe and european (science) collaboration.
-
-I can also be found @ linkedin and @ 
+I love creating, managing, exploring and visualising large datasets with biological meaning, and I am a big believer in europe and european (science) collaboration. I can be contacted for collaborations of any kind. 
 
 ## Current projects
+
+### Open for recruitment
+
+Nearing the end of my PhD means I am available for hire!
 
 ### Genome architecture of Prokaryotes
 
@@ -21,9 +23,9 @@ Total number of genes and the related concepts coding density and gene density a
 
 For a blog on the project click [here](/menu1/)
 
-### Open for JOBs
+### Convolution / deconvolution
 
-Nearing the end of my PhD means I am available for hire!
+I have used deconvolution software to denoise image datasets, and to increase the spatial resolution of fluorophores. I wanted to fully understand the inner workings of these usefull techniques, and am implementing a simple 2D proof of principle. 
 
 ## Skills
 
@@ -40,6 +42,9 @@ Nearing the end of my PhD means I am available for hire!
 1. LaTeX / html, markdown languages
 
 ## Publication list
+
+
+
 
 \biblabel{noether15}{Noether (1915)} **Noether**,  Körper und Systeme rationaler Funktionen, 1915.
 \biblabel{bezanson17}{Bezanson et al. (2017)} **Bezanson**, **Edelman**, **Karpinski** and **Shah**, [Julia: a fresh approach to numerical computing](https://julialang.org/research/julia-fresh-approach-BEKS.pdf), SIAM review 2017.
